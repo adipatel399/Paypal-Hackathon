@@ -316,7 +316,7 @@ async function act(action, id) {
   if (action === "privacy") {
     modal(
       "Privacy in this prototype.",
-      `<p class="body-3">Campaigns, display names, payment references, and operation records are stored in the local SQLite database. A browser session cookie associates a checkout with its browser. It is necessary for checkout ownership, not advertising.</p><p class="note body-6">Local Ollama inference stays on this computer. If you explicitly select Gemini, briefs are sent to Google under its free-tier data terms. PayPal sandbox receives checkout data when enabled. No card details pass through this app. To delete demo data, reset the simulation; to delete all local data, stop the server and remove .data/greenlight.sqlite and its journal files.</p>`,
+      `<p class="body-3">Campaigns, display names, payment references, and operation records are stored in the local SQLite database. A browser session cookie associates a checkout with its browser. It is necessary for checkout ownership, not advertising.</p><p class="note body-6">Local Ollama inference stays on this computer. If you select Groq or Gemini, briefs are sent to that provider under its account data terms. PayPal sandbox receives checkout data when enabled. No card details pass through this app. To delete demo data, reset the simulation; to delete all local data, stop the server and remove .data/greenlight.sqlite and its journal files.</p>`,
     );
     return;
   }
