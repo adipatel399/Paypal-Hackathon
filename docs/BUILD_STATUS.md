@@ -14,6 +14,10 @@ Updated 3 November 2026. Budget requirement: ₹0, no paid cloud resources.
 - Sandbox-only PayPal adapter, operation journal, settlement compensation, manual reconciliation and webhook signature-verification code.
 - Local setup instructions, CI workflow, MIT license, and submission draft.
 
+## Public repository
+
+Published: https://github.com/adipatel399/Paypal-Hackathon . GitHub detects the MIT license. The initial source commit passed GitHub Actions checks. Local browser verification also confirmed the real Ollama extraction result and a 390px layout without horizontal overflow.
+
 ## Needs account input or external verification
 
 - PayPal sandbox client ID and secret are missing. Real authorize/capture/void/refund behavior is not yet verified against PayPal.
