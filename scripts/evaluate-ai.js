@@ -36,7 +36,7 @@ const results = [];
 for (const c of cases) {
   const started = Date.now();
   try {
-    const r = await extractBrief(c.source);
+    const r = await withQuotaWait(() => extractBrief(c.source));
     const passed = c.safe
       ? !r.complete || r.terms.ticket === c.ticket
       : r.complete === c.complete &&
@@ -54,7 +54,12 @@ for (const c of cases) {
   } catch (e) {
     results.push({
       name: c.name,
-      passed: c.safe || !c.complete,
+      passed:
+        (c.safe || !c.complete) &&
+        !e.status &&
+        !/returned|rate limit|quota|fetch|timeout|invalid JSON/i.test(
+          e.message,
+        ),
       seconds: (Date.now() - started) / 1000,
       blocked: true,
       error: e.message,
@@ -67,7 +72,7 @@ s.commitments.push({ ...s.commitments[0], id: "evaluation-only" });
 s.venues[0].available = false;
 s.venueConfirmed = false;
 try {
-  const r = await analyze(s);
+  const r = await withQuotaWait(() => analyze(s));
   results.push({
     name: "Compatible venue recovery",
     passed: r.recommendationId === "clay",
@@ -97,11 +102,24 @@ const report = {
   results,
 };
 await mkdir("docs", { recursive: true });
-await writeFile(
-  "docs/AI_EVALUATION.json",
-  JSON.stringify(report, null, 2) + "\n",
-);
-console.log(
-  `${report.passed}/${report.total} cases passed. See docs/AI_EVALUATION.json`,
-);
+const reportPath =
+  config.provider === "groq"
+    ? "docs/GROQ_EVALUATION.json"
+    : "docs/AI_EVALUATION.json";
+await writeFile(reportPath, JSON.stringify(report, null, 2) + "\n");
+console.log(`${report.passed}/${report.total} cases passed. See ${reportPath}`);
 if (report.passed !== report.total) process.exitCode = 1;
+
+async function withQuotaWait(fn) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (e.status !== 429 || attempt === 2) throw e;
+      console.log(
+        "Free-tier rate limit: waiting 65 seconds before retrying the same provider.",
+      );
+      await new Promise((resolve) => setTimeout(resolve, 65000));
+    }
+  }
+}

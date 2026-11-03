@@ -18,6 +18,7 @@ export function createService(store, provider, mode) {
       );
     busy = true;
     try {
+      await store.refresh?.();
       return await fn();
     } finally {
       busy = false;
@@ -38,12 +39,12 @@ export function createService(store, provider, mode) {
       s.operations.push(op);
     }
     c.status = `${kind}_PENDING`;
-    save(s);
+    await save(s);
     try {
       const result = await call(key);
       op.status = "RETURNED";
       op.result = result;
-      save(s);
+      await save(s);
       return result;
     } catch (e) {
       op.status = e.uncertain ? "UNKNOWN" : "FAILED";
@@ -55,7 +56,7 @@ export function createService(store, provider, mode) {
             ? "CAPTURED"
             : "AUTHORIZED";
       op.error = e.message;
-      save(s);
+      await save(s);
       throw e;
     }
   }
@@ -70,7 +71,7 @@ export function createService(store, provider, mode) {
   });
   async function compensate(s) {
     s.status = "COMPENSATING";
-    save(s);
+    await save(s);
     for (const c of s.commitments) {
       try {
         if (c.status === "CAPTURED") {
@@ -89,10 +90,10 @@ export function createService(store, provider, mode) {
           );
           c.status = "VOIDED";
         }
-        save(s);
+        await save(s);
       } catch (e) {
         event(s, "warning", "Recovery needs attention", e.message);
-        save(s);
+        await save(s);
       }
     }
     s.status = s.commitments.every((c) =>
@@ -108,21 +109,23 @@ export function createService(store, provider, mode) {
         : "Recovery remains pending",
       "Captured payments are refunded; uncaptured authorizations are voided. Provider and bank processing times may apply.",
     );
-    save(s);
+    await save(s);
   }
   return {
     exclusive,
+    isBusy: () => busy,
     state: () => publicState(store.read()),
-    reset() {
+    async reset() {
       if (mode !== "demo")
         throw new Error(
           "Sandbox campaigns cannot be reset. Resolve every payment first.",
         );
       const s = seed(mode);
-      save(s);
+      s._storeEtag = store.read()._storeEtag;
+      await save(s);
       return publicState(s);
     },
-    activate(draftId, venueInput, consent) {
+    async activate(draftId, venueInput, consent) {
       const old = store.read();
       const draft = old.draft;
       if (consent !== true || !draft || draft.id !== draftId || !draft.complete)
@@ -140,6 +143,7 @@ export function createService(store, provider, mode) {
         );
       const venues = validateVenues(venueInput, draft.terms);
       const next = seed(mode);
+      next._storeEtag = old._storeEtag;
       next.commitments = [];
       next.terms = draft.terms;
       next.brief = draft.source;
@@ -154,14 +158,14 @@ export function createService(store, provider, mode) {
         model: draft.model,
         facts: draft.facts,
       };
-      store.archive(old);
+      await store.archive(old);
       event(
         next,
         "plan",
         "Reviewed brief activated",
         "Organizer approved the extracted conditions and entered venue quotes. Previous campaign archived. Venue availability is not yet confirmed.",
       );
-      save(next);
+      await save(next);
       return publicState(next);
     },
     async commit({ name, consent, campaignId, version }, owner) {
@@ -196,7 +200,7 @@ export function createService(store, provider, mode) {
         createdAt: new Date().toISOString(),
       };
       s.commitments.push(c);
-      save(s);
+      await save(s);
       if (mode === "demo") {
         c.status = "AUTHORIZED";
         c.authorizationId = `SIM-AUTH-${c.id.slice(0, 8)}`;
@@ -206,7 +210,7 @@ export function createService(store, provider, mode) {
           c.orderId = r.id;
         } catch (e) {
           c.status = e.uncertain ? "UNKNOWN" : "FAILED";
-          save(s);
+          await save(s);
           throw e;
         }
       }
@@ -216,7 +220,7 @@ export function createService(store, provider, mode) {
         "A new possibility joined",
         `${c.name} · $${amountText(c.amount)} ${mode === "demo" ? "simulated authorization" : "sandbox checkout created"}.`,
       );
-      save(s);
+      await save(s);
       return { commitmentId: c.id, orderId: c.orderId, state: publicState(s) };
     },
     async authorize(id, owner) {
@@ -246,7 +250,7 @@ export function createService(store, provider, mode) {
         a.amount?.currency_code !== "USD"
       ) {
         c.status = "UNKNOWN";
-        save(s);
+        await save(s);
         throw new Error(
           "Authorization was not confirmed. Reconcile this order.",
         );
@@ -259,10 +263,10 @@ export function createService(store, provider, mode) {
         "Sandbox authorization confirmed",
         `${c.name} · $${amountText(c.amount)} held, not captured.`,
       );
-      save(s);
+      await save(s);
       return publicState(s);
     },
-    disrupt() {
+    async disrupt() {
       if (mode !== "demo")
         throw new Error("Scenario injection is simulation-only.");
       const s = store.read();
@@ -276,10 +280,10 @@ export function createService(store, provider, mode) {
         "A change in plans",
         "Scenario input: the selected venue is no longer available. No payments have been captured.",
       );
-      save(s);
+      await save(s);
       return publicState(s);
     },
-    select(id) {
+    async select(id) {
       const s = store.read();
       assertEditable(s);
       const v = s.venues.find((v) => v.id === id);
@@ -300,7 +304,7 @@ export function createService(store, provider, mode) {
         "A compatible plan, confirmed",
         `${v.name} selected. Organizer confirms availability. Same reviewed time, district, accessibility, and ticket price.`,
       );
-      save(s);
+      await save(s);
       return publicState(s);
     },
     async settle(failAt) {
@@ -315,7 +319,7 @@ export function createService(store, provider, mode) {
         "Conditions met. Settlement started.",
         "Plan locked. Each payment is captured separately; no atomic settlement is claimed.",
       );
-      save(s);
+      await save(s);
       let i = 0;
       try {
         for (const c of s.commitments.filter(
@@ -330,7 +334,7 @@ export function createService(store, provider, mode) {
           );
           c.captureId = r.id;
           c.status = r.status === "COMPLETED" ? "CAPTURED" : "UNKNOWN";
-          save(s);
+          await save(s);
           if (c.status !== "CAPTURED")
             throw new Error("Capture is pending. Reconcile before proceeding.");
         }
@@ -341,10 +345,10 @@ export function createService(store, provider, mode) {
           "This little possibility is happening.",
           `${s.commitments.filter((c) => c.status === "CAPTURED").length} payments captured. ${s.venues.find((v) => v.id === s.selectedVenue).name} confirmed by organizer.`,
         );
-        save(s);
+        await save(s);
       } catch (e) {
         event(s, "warning", "Settlement interrupted", e.message);
-        save(s);
+        await save(s);
         await compensate(s);
       }
       return publicState(s);
@@ -407,10 +411,10 @@ export function createService(store, provider, mode) {
                 c.status = "AUTHORIZED";
             }
           }
-          save(s);
+          await save(s);
         } catch (e) {
           event(s, "warning", "Reconciliation pending", e.message);
-          save(s);
+          await save(s);
         }
       }
       if (
@@ -423,7 +427,7 @@ export function createService(store, provider, mode) {
         "Payment records checked",
         "Unresolved provider outcomes remain blocked; no automatic success is assumed.",
       );
-      save(s);
+      await save(s);
       return publicState(s);
     },
   };

@@ -37,5 +37,5 @@ if (config.provider === "ollama") {
   }
 }
 console.log(
-  "Free mode: no cloud billing, no automatic paid-provider fallback.",
+  "Free-plan configuration: no automatic upgrades or provider fallback; account billing remains provider-controlled.",
 );

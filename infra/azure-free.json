@@ -1,0 +1,189 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "type": "string"
+    },
+    "databaseAccountName": {
+      "type": "string"
+    },
+    "sessionSecret": {
+      "type": "securestring"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastasia",
+      "allowedValues": [
+        "eastasia",
+        "koreacentral",
+        "malaysiawest",
+        "indonesiacentral",
+        "indiasouthcentral"
+      ]
+    },
+    "databaseLocation": {
+      "type": "string",
+      "defaultValue": "eastasia",
+      "allowedValues": [
+        "eastasia",
+        "koreacentral",
+        "malaysiawest",
+        "indonesiacentral",
+        "indiasouthcentral"
+      ]
+    }
+  },
+  "variables": {
+    "planName": "[concat(parameters('appName'), '-free')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('planName')]",
+      "location": "[parameters('location')]",
+      "kind": "linux",
+      "sku": {
+        "name": "F1",
+        "tier": "Free",
+        "capacity": 1
+      },
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-05-15",
+      "name": "[parameters('databaseAccountName')]",
+      "location": "[parameters('databaseLocation')]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "enableFreeTier": true,
+        "capacity": {
+          "totalThroughputLimit": 1000
+        },
+        "enableAutomaticFailover": false,
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        },
+        "locations": [
+          {
+            "locationName": "[parameters('databaseLocation')]",
+            "failoverPriority": 0,
+            "isZoneRedundant": false
+          }
+        ],
+        "publicNetworkAccess": "Enabled",
+        "minimalTlsVersion": "Tls12"
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2024-05-15",
+      "name": "[concat(parameters('databaseAccountName'), '/greenlight')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts',parameters('databaseAccountName'))]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "greenlight"
+        },
+        "options": {
+          "throughput": 400
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-05-15",
+      "name": "[concat(parameters('databaseAccountName'), '/greenlight/workspaces')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases',parameters('databaseAccountName'),'greenlight')]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "workspaces",
+          "partitionKey": {
+            "paths": ["/scope"],
+            "kind": "Hash"
+          },
+          "defaultTtl": 604800,
+          "indexingPolicy": {
+            "automatic": true,
+            "indexingMode": "consistent",
+            "includedPaths": [],
+            "excludedPaths": [
+              {
+                "path": "/*"
+              }
+            ]
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms',variables('planName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms',variables('planName'))]",
+        "httpsOnly": true,
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "linuxFxVersion": "NODE|22-lts",
+          "appCommandLine": "node src/server.js",
+          "alwaysOn": false,
+          "minTlsVersion": "1.2",
+          "ftpsState": "Disabled",
+          "http20Enabled": true
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2023-12-01",
+      "name": "[concat(parameters('appName'),'/appsettings')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites',parameters('appName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers',parameters('databaseAccountName'),'greenlight','workspaces')]"
+      ],
+      "properties": {
+        "PUBLIC_ORIGIN": "[concat('https://',reference(resourceId('Microsoft.Web/sites',parameters('appName')),'2023-12-01').defaultHostName)]",
+        "SESSION_SECRET": "[parameters('sessionSecret')]",
+        "COSMOS_ENDPOINT": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts',parameters('databaseAccountName')),'2024-05-15').documentEndpoint]",
+        "COSMOS_KEY": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts',parameters('databaseAccountName')),'2024-05-15').primaryMasterKey]",
+        "COSMOS_DATABASE": "greenlight",
+        "COSMOS_CONTAINER": "workspaces",
+        "PAYMENT_MODE": "demo",
+        "AI_PROVIDER": "groq",
+        "GROQ_MODEL": "openai/gpt-oss-20b",
+        "GROQ_FREE_TIER_CONFIRMED": "false",
+        "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
+        "WEBSITE_NODE_DEFAULT_VERSION": "~22"
+      }
+    }
+  ],
+  "outputs": {
+    "origin": {
+      "type": "string",
+      "value": "[concat('https://',reference(resourceId('Microsoft.Web/sites',parameters('appName')),'2023-12-01').defaultHostName)]"
+    },
+    "webSku": {
+      "type": "string",
+      "value": "F1"
+    },
+    "databaseFreeTier": {
+      "type": "bool",
+      "value": true
+    }
+  }
+}

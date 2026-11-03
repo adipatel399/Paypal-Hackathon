@@ -46,12 +46,12 @@ test("negative fees and excessive attendance cannot activate", () => {
   assert.throws(() => validateExtraction(d, d.source));
   assert.throws(() => validateVenues([{ name: "Bad", cost: -1 }], d.terms));
 });
-test("applying a draft never silently rewrites an authorized agreement", () => {
+test("applying a draft never silently rewrites an authorized agreement", async () => {
   const { store, service } = fresh();
   const s = store.read();
   s.draft = sampleBrief();
   store.save(s);
-  assert.throws(
+  await assert.rejects(
     () => service.activate(s.draft.id, sampleVenues(), true),
     /existing commitments/,
   );
@@ -64,7 +64,7 @@ test("resolved campaign is archived before a reviewed agreement starts", async (
   store.save(s);
   const oldId = s.id;
   await service.cancel();
-  service.activate(s.draft.id, sampleVenues(), true);
+  await service.activate(s.draft.id, sampleVenues(), true);
   const active = service.state();
   assert.notEqual(active.id, oldId);
   assert.equal(active.commitments.length, 0);

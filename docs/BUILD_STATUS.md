@@ -1,33 +1,30 @@
 # Actual build status
 
-Updated 3 November 2026. Budget requirement: ₹0, no paid cloud resources.
+Updated 3 November 2026. Budget requirement: ₹0 out of pocket, no paid AI upgrade.
 
-## Implemented and checked
+## Live judge demo
 
-- Studio workspace, responsive navigation, commitment ledger, venue comparison, event records, brief builder and evidence export.
-- Real local AI inference using the already installed Ollama `llama3.2:latest` model. No cloud AI credential or per-request fee.
-- Text/Markdown brief import, typed extraction, source quotations, monetary evidence checks, missing/contradictory condition blocking, and explicit organizer review.
-- Typed venue quote entry and new-agreement activation after existing commitments are resolved. Prior campaign archived in SQLite.
-- Dynamic reviewed prices, integer-cent accounting, participant bounds, materials, fees, margin, district, time and access requirements.
-- Stale buyer agreements rejected by campaign ID/version. Raw PayPal payloads excluded from public exports.
-- Thirty-four offline tests pass, including four Groq adapter contract tests. Real local model evaluation passes five synthetic cases. The earlier baseline and the final report are retained in `AI_EVALUATION_BASELINE.json` and `AI_EVALUATION.json`; this is a small test set, not a safety certification.
-- Sandbox-only PayPal adapter, operation journal, settlement compensation, manual reconciliation and webhook signature-verification code.
-- Local setup instructions, CI workflow, MIT license, and submission draft.
+https://greenlight-ppai-36bd36-kr.azurewebsites.net
 
-## Public repository
+The hosted prototype uses **real Groq inference and explicitly simulated payments**. Judges do not need Ollama, a local installation, or their own AI key.
 
-Published: https://github.com/adipatel399/Paypal-Hackathon . GitHub detects the MIT license. The initial source commit passed GitHub Actions checks. Local browser verification also confirmed the real Ollama extraction result and a 390px layout without horizontal overflow.
+Azure App Service uses F1 / Free. Cosmos DB has free tier enabled, one region, 400 RU/s shared database throughput and a 1000 RU/s account cap. Both active services are in Korea Central. The student subscription's spending limit remains On. Free-tier quotas still apply; no paid tier or automatic provider fallback is enabled.
 
-## Needs account input or external verification
+## Verified
 
-- PayPal sandbox client ID and secret are missing. Real authorize/capture/void/refund behavior is not yet verified against PayPal.
-- External webhook delivery requires secure HTTPS deployment. Current local-only server is intentionally not exposed publicly.
-- Final customer validation, public YouTube video under three minutes, and final Devpost submission remain unfinished.
+- Forty-three automated tests pass, including hosted session isolation, signed cookies, optimistic concurrency and persistence before payment operations.
+- Five real local Ollama evaluation cases passed, retained in `AI_EVALUATION.json` along with their earlier baseline.
+- Five real Groq evaluation cases passed, recorded separately in `GROQ_EVALUATION.json`. Each report states its small synthetic scope and exact outcomes.
+- Eleven external HTTPS/API checks passed in `HOSTED_VERIFICATION.json`: public health, isolated workspaces, secure cookies, persisted commitments, real Groq extraction and recovery, simulated settlement, origin protection, HTML and assets.
+- Text/Markdown brief import, source-backed draft review, typed venue quotes and explicit activation after resolving old commitments are implemented.
+- Dynamic reviewed USD prices, costs, capacity, time, district and accessibility conditions feed deterministic launch gates.
+- Public repository: https://github.com/adipatel399/Paypal-Hackathon . MIT license and GitHub CI are configured.
 
-## Hosting decision
+## Unfinished
 
-The run-instructions submission option avoids requiring any paid hosting. Azure + Groq is now the target for a hosted judge demo. The Groq adapter is implemented; public deployment still needs durable storage and judge-session isolation. No Azure resources have been provisioned. Do not enable billed resources to run this project.
+- Actual PayPal sandbox client ID and secret are still missing. No real PayPal authorization, capture, void or refund has been verified against the entrant's sandbox app.
+- The user authorized browser setup on their behalf, but the browser-control tool still reports “Local browser use is disabled in Work settings.” No PayPal login or app creation has been performed.
+- Hosted real sandbox payments and webhooks are deliberately disabled; simulated records expire after seven days without updates.
+- Final hosted browser visual QA, customer validation, public YouTube video under three minutes, and final Devpost submission remain unfinished.
 
-## Model limitations
-
-Local model outputs can be incomplete or incorrect. Output schema and source checks constrain proposals; they do not prove semantics. Human review is required before activation. The deterministic engine decides eligibility and payment operations. The model cannot access PayPal credentials or execute a payment.
+The app is a runnable hosted prototype, not a finished hackathon submission or a production financial service.

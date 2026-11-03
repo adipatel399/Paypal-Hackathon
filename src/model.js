@@ -84,7 +84,10 @@ export async function generateJSON(
           model: config.model,
           stream: false,
           temperature: 0,
-          max_completion_tokens: 4096,
+          max_completion_tokens: 3072,
+          ...(config.model.startsWith("openai/")
+            ? { reasoning_effort: "low" }
+            : {}),
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },
@@ -134,8 +137,11 @@ export async function generateJSON(
       { status: 429 },
     );
   if (!response.ok)
-    throw new Error(
-      `${config.provider} returned ${response.status}. No fallback provider was called. Check the model service or free-tier quota.`,
+    throw Object.assign(
+      new Error(
+        `${config.provider} returned ${response.status}. No fallback provider was called. Check the model service or free-tier quota.`,
+      ),
+      { status: 502 },
     );
   const body = await response.json();
   const raw =

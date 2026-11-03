@@ -175,8 +175,9 @@ export function assertEditable(s) {
     );
 }
 export function publicState(s) {
+  const { _storeEtag, ...safe } = s;
   return {
-    ...s,
+    ...safe,
     terms: terms(s),
     operations: s.operations.map(({ result, ...op }) => op),
     commitments: s.commitments.map(({ owner, ...c }) => c),

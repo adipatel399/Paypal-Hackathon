@@ -8,7 +8,7 @@ Greenlight helps independent workshop organizers turn conditional commitments in
 
 ## Features implemented
 
-Local Llama 3.2 inference through Ollama, source-backed draft review, dynamic commercial terms, typed venue quotes, conditional commitments, inspectable event records, a PayPal sandbox adapter, and simulated partial-settlement recovery.
+Real Groq-hosted inference for the public demo, optional local Llama 3.2 inference through Ollama, source-backed draft review, dynamic commercial terms, typed venue quotes, conditional commitments, inspectable event records, a PayPal sandbox adapter, and simulated partial-settlement recovery.
 
 ## Inspiration
 
@@ -28,7 +28,7 @@ Authorization is not guaranteed payment, group capture is not atomic, model evid
 
 ## Validation
 
-Thirty deterministic tests pass. Five synthetic cases were run against the real local model and passed the stated criteria. The reports retain both the initial failed baseline and later results. This does not establish production reliability or broad prompt-injection resistance.
+Forty-three automated tests pass. Eleven hosted API checks passed with real Groq and explicitly simulated payments. Five synthetic cases were run against the real local model and passed the stated criteria. The reports retain both the initial failed baseline and later results. This does not establish production reliability or broad prompt-injection resistance.
 
 ## Must verify before final submission
 
@@ -45,3 +45,5 @@ PayPal sandbox approvals, authorization, capture, void and refund must be exerci
 2:35–2:50: Explain the reusable conditional-commerce idea and current limits.
 
 No prize guarantee, escrow claim, fulfillment guarantee, autonomous live-money claim, or atomic group-payment claim.
+
+Hosted judge URL: https://greenlight-ppai-36bd36-kr.azurewebsites.net . Payments on this URL are simulated; real PayPal sandbox verification is still required.

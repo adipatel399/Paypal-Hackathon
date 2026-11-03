@@ -47,11 +47,11 @@ test("consent is mandatory and session ownership is never exposed", async () => 
 test("venue loss blocks settlement; incompatible venue cannot be selected", async () => {
   const { service } = setup();
   await eighth(service);
-  service.disrupt();
+  await service.disrupt();
   assert.equal(service.state().evaluation.ready, false);
-  assert.throws(() => service.select("loft"), /access|workstations/);
+  await assert.rejects(() => service.select("loft"), /access|workstations/);
   await assert.rejects(() => service.settle(), /unavailable/);
-  service.select("clay");
+  await service.select("clay");
   assert.equal(service.state().evaluation.ready, true);
   assert.equal(service.state().evaluation.margin, 8400);
 });
@@ -104,11 +104,11 @@ test("same campaign rejects concurrent mutations", async () => {
   finish();
   await running;
 });
-test("sandbox has no seeded commitments and cannot inject/reset fixtures", () => {
+test("sandbox has no seeded commitments and cannot inject/reset fixtures", async () => {
   const { service } = setup("sandbox");
   assert.equal(service.state().commitments.length, 0);
-  assert.throws(() => service.reset(), /cannot be reset/);
-  assert.throws(() => service.disrupt(), /simulation-only/);
+  await assert.rejects(() => service.reset(), /cannot be reset/);
+  await assert.rejects(() => service.disrupt(), /simulation-only/);
 });
 test("sandbox authorizations require owning browser session", async () => {
   const { service } = setup("sandbox", {
@@ -205,7 +205,7 @@ test("fixture analysis proposes a compatible fallback without confirming it", as
   const { analyze } = await import("../src/ai.js");
   const { store, service } = setup();
   await eighth(service);
-  service.disrupt();
+  await service.disrupt();
   const key = process.env.ANTHROPIC_API_KEY;
   delete process.env.ANTHROPIC_API_KEY;
   try {

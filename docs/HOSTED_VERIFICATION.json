@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-03T07:35:05.955Z",
+  "origin": "https://greenlight-ppai-36bd36-kr.azurewebsites.net",
+  "scope": "External HTTPS/API verification of isolated simulated-payment workspaces. No real PayPal sandbox transactions.",
+  "checks": [
+    {
+      "name": "Public HTTPS health",
+      "passed": true
+    },
+    {
+      "name": "Judge workspaces isolated",
+      "passed": true
+    },
+    {
+      "name": "Real cloud AI configured; payments explicitly simulated",
+      "passed": true
+    },
+    {
+      "name": "Secure browser session cookie",
+      "passed": true
+    },
+    {
+      "name": "Commitments persist and remain isolated",
+      "passed": true
+    },
+    {
+      "name": "Real Groq brief extraction",
+      "passed": true,
+      "model": "openai/gpt-oss-20b"
+    },
+    {
+      "name": "Real Groq venue recovery",
+      "passed": true,
+      "model": "openai/gpt-oss-20b"
+    },
+    {
+      "name": "End-to-end simulated settlement on durable hosted storage",
+      "passed": true
+    },
+    {
+      "name": "Cross-origin mutation blocked",
+      "passed": true
+    },
+    {
+      "name": "Public application HTML",
+      "passed": true
+    },
+    {
+      "name": "Application assets available",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

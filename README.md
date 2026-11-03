@@ -2,7 +2,11 @@
 
 Conditional commerce for independent workshop organizers. A participant agrees to a specific price and plan. The organizer collects only after the reviewed launch conditions pass.
 
-**₹0 setup:** Node, SQLite, GitHub source, PayPal sandbox, and local Ollama inference. No paid AI service or hosting subscription is required. Production payments are disabled.
+**Hosted demo:** https://greenlight-ppai-36bd36-kr.azurewebsites.net
+
+The hosted demo uses real Groq inference and explicitly simulated payments. Judges can open it without installing anything. External API verification is recorded in [HOSTED_VERIFICATION.json](docs/HOSTED_VERIFICATION.json). Real PayPal sandbox verification remains unfinished.
+
+**₹0 out-of-pocket setup:** Azure App Service F1, Cosmos DB free tier, Groq Free, GitHub source, and PayPal sandbox. Local development can also use SQLite and Ollama. No paid AI service or hosting subscription is required. Production payments are disabled.
 
 ## Run the project
 
@@ -24,7 +28,7 @@ npm test            # offline deterministic tests; no AI service required
 npm run test:ai     # real model calls on five fictional cases; results saved in docs/AI_EVALUATION.json
 ```
 
-The application binds to loopback. Hosting is optional under the hackathon's run-instructions submission option. This development server must not be exposed publicly.
+Local mode binds to loopback. Hosted mode requires an HTTPS origin, signed session cookies and Cosmos DB. The Azure deployment keeps each judge in an isolated simulated-payment workspace; the local SQLite server must not simply be exposed through a tunnel.
 
 ## What works
 
@@ -103,7 +107,7 @@ GROQ_MODEL=openai/gpt-oss-20b
 GROQ_FREE_TIER_CONFIRMED=true
 ```
 
-Keep the Groq account on Free without adding a payment method. The app cannot inspect provider billing. Requests send the brief to Groq; review its data terms before submitting private information. Live Groq inference remains unverified until the entrant supplies a key. The local-model evaluation report must not be represented as Groq results.
+Keep the Groq account on Free without adding a payment method. The app cannot inspect provider billing. Requests send the brief to Groq; review its data terms before submitting private information. Live Groq inference remains unverified until the entrant supplies a key. Five real Groq checks are recorded separately in [GROQ_EVALUATION.json](docs/GROQ_EVALUATION.json). Local-model results remain in their own report.
 
 ### Optional Gemini free tier
 
@@ -126,16 +130,17 @@ Use a Google AI Studio project **without paid billing**. Only set the confirmati
 - `src/service.js`: consent, operation journal, settlement, compensation, reconciliation, activation and archives.
 - `src/store.js`: SQLite campaign records, archives and webhook inbox.
 - `src/paypal.js`: sandbox-only API client.
-- `src/server.js`: Node HTTP server and local request authentication/origin checks.
+- `src/server.js`, `src/http.js`: Node HTTP server, origin checks and scoped request handling.
+- `src/hosting.js`, `src/cosmos-store.js`: signed browser sessions, isolated durable stores, optimistic concurrency, retention and free-demo usage budgets.
 - `public/`: responsive workspace, source-review UI and architectural SVG drawing.
 
-A single process serializes campaign mutations. Do not run multiple instances against this database. State persists under `.data/`. Raw PayPal responses and browser ownership tokens are excluded from public state and evidence exports. This build has no public account system, background job runner, or public deployment.
+A single process serializes campaign mutations. Do not run multiple instances against this database. Local state persists under `.data/`. Hosted simulated records persist in Cosmos DB with a seven-day inactivity retention period. Raw PayPal responses and browser ownership tokens are excluded from public state and evidence exports. The hosted demo has isolated signed browser sessions and daily usage budgets; it has no public account system or background payment-recovery worker. Hosted payment mode is intentionally limited to simulation. Real sandbox transactions remain in the authenticated local verification flow.
 
 ## Submission status and limits
 
 The local prototype is runnable; the hackathon submission is not yet complete. See [BUILD_STATUS](docs/BUILD_STATUS.md), [AI evaluation](docs/AI_EVALUATION.json), and [submission draft](docs/SUBMISSION_DRAFT.md).
 
-Still needed: real sandbox transaction verification, final model evaluation review, user validation, video under three minutes on public YouTube, and the final Devpost submission. No prize guarantee is made.
+Still needed: real PayPal sandbox transaction verification, user validation, a video under three minutes on public YouTube, and the final Devpost submission. The cloud AI and hosted API flow have been verified; that does not establish production reliability. No prize guarantee is made.
 
 A confirmed launch is not a fulfillment guarantee. Organizers remain responsible for delivery and later cancellations. Greenlight is not escrow. Fee allowances are illustrative budgets, not PayPal pricing.
 
@@ -144,3 +149,13 @@ A confirmed launch is not a fulfillment guarantee. Organizers remain responsible
 [PayPal authorization](https://developer.paypal.com/checkout/delay-capture/), [Payments API](https://developer.paypal.com/api/payments/v2/), [webhook verification](https://developer.paypal.com/api/webhooks/overview/), [Ollama structured output](https://ollama.com/blog/structured-outputs), [Gemini API](https://ai.google.dev/api).
 
 Source: MIT. Manrope is bundled under its [SIL Open Font License](public/MANROPE-LICENSE.txt). Floor plan, favicon and interface are original CSS/SVG work. No fabricated customer endorsements.
+
+## Azure deployment
+
+The live app and database are in Korea Central. App Service uses **F1 / Free**; Cosmos has its free tier enabled, one region, 400 RU/s database throughput and a 1000 RU/s account cap. The student subscription’s spending protection remains enabled. Free tiers have capacity, bandwidth and usage limits; the application caps requests and AI use and does not upgrade tiers automatically.
+
+The infrastructure template and deployment helpers are in `infra/azure-free.json`, `scripts/azure-prepare.js` and `scripts/azure-publish.js`. They are not run by GitHub CI. They require an explicitly configured Azure CLI session and enforce spending protection and free SKUs. Operator metadata, parameter files, deployment packages and secrets remain under ignored `.data/` files.
+
+`PUBLIC_ORIGIN`, `SESSION_SECRET`, `COSMOS_ENDPOINT`, `COSMOS_KEY`, and the Groq Free-plan settings configure hosted mode. Azure application settings hold secrets; they are never included in browser state. Hosted mode refuses Ollama and real payment settlement. The public simulator retains PayPal API integration in the source and local sandbox flow, but must not be described as having verified real PayPal transactions yet.
+
+Forty-three automated tests pass, covering durable-write ordering, optimistic-concurrency conflicts, session isolation, forged cookies and cross-origin mutations. The hosted API was exercised over HTTPS through actual Groq extraction, venue recovery and simulated settlement. Browser visual verification of the final hosted build remains pending because the browser-control tool reports disabled access in this chat.
