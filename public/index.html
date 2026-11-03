@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Greenlight is a conditional checkout workspace for independent workshop organizers."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta property="og:title" content="Greenlight · The launch desk" />
+    <meta
+      property="og:description"
+      content="Plan the workshop. Confirm the commitments. Know when to collect."
+    />
+    <meta property="og:image" content="/social.svg" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <title>Saturday Clay Club — Greenlight</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a href="#main" class="skip button-md">Skip to launch plan</a>
+    <header class="topbar">
+      <a class="brand heading-5" href="/" aria-label="Greenlight home"
+        ><span class="brand-mark" aria-hidden="true">g</span>greenlight</a
+      ><span class="topbar-label caption-3"
+        >THE CONDITIONAL CHECKOUT WORKSPACE</span
+      >
+      <div class="topbar-right">
+        <span class="environment caption-3" id="environment"
+          >SIMULATION / NO REAL MONEY</span
+        ><button class="quiet button-sm" data-action="connections">
+          Connections</button
+        ><button class="primary button-sm" data-action="join">
+          Reserve a place
+        </button>
+      </div>
+    </header>
+    <div class="desk-layout">
+      <aside class="rail">
+        <div class="rail-intro caption-3">YOUR WORKSPACE <span>01</span></div>
+        <div class="project-label">
+          <span class="project-marker" aria-hidden="true"></span>
+          <div class="title-4">
+            Saturday Clay Club<span class="caption-5">Workshop launch</span>
+          </div>
+        </div>
+        <nav
+          class="workspace-nav"
+          role="tablist"
+          aria-label="Launch room views"
+        >
+          <button
+            role="tab"
+            aria-selected="true"
+            data-view="overview"
+            class="tab title-4 active"
+          >
+            <span class="nav-index caption-4">01</span>Launch plan<span
+              class="nav-arrow"
+              aria-hidden="true"
+              >↗</span
+            ></button
+          ><button
+            role="tab"
+            aria-selected="false"
+            data-view="commitments"
+            class="tab title-4"
+          >
+            <span class="nav-index caption-4">02</span>Commitments<span
+              id="commit-count"
+              class="caption-3"
+              >7</span
+            ></button
+          ><button
+            role="tab"
+            aria-selected="false"
+            data-view="recovery"
+            class="tab title-4"
+          >
+            <span class="nav-index caption-4">03</span>Alternatives</button
+          ><button
+            role="tab"
+            aria-selected="false"
+            data-view="evidence"
+            class="tab title-4"
+          >
+            <span class="nav-index caption-4">04</span>Activity & evidence</button
+          ><button
+            role="tab"
+            aria-selected="false"
+            data-view="briefing"
+            class="tab title-4"
+          >
+            <span class="nav-index caption-4">05</span>Brief builder
+          </button>
+        </nav>
+        <div class="rail-note">
+          <span class="caption-3">A NOTE ON THIS BUILD</span>
+          <p class="caption-2">
+            Fictional venues.<br />Visible decisions.<br />No hidden payments.
+          </p>
+          <span class="mode-badge caption-3" id="mode-badge">SIMULATION</span>
+        </div>
+        <div class="rail-bottom caption-5">
+          GREENLIGHT / WORKING PROTOTYPE<br />PAYPAL AI HACKATHON 2026
+        </div>
+      </aside>
+      <main id="main" class="desk-main">
+        <div class="breadcrumbs caption-4">
+          <span>Workshops / Launch desk</span
+          ><button class="quiet caption-4" data-action="brief">
+            Read the project brief ↗
+          </button>
+        </div>
+        <section class="project-heading">
+          <div>
+            <div class="eyebrow caption-3">
+              <span class="live-dot"></span
+              ><span id="campaign-phase"
+                >PROJECT 001 · OPEN FOR COMMITMENTS</span
+              >
+            </div>
+            <h1 class="heading-1" id="project-title">
+              Saturday<br />Clay Club<span class="title-dot">.</span>
+            </h1>
+            <p class="project-description body-3">
+              Eight people. A table full of clay.<br />A workshop that happens
+              when the plan adds up.
+            </p>
+            <div class="project-meta caption-2">
+              <span>Hand building workshop</span
+              ><span id="project-slot">Saturday / 14:00–16:00</span
+              ><span id="project-location">Arts District</span>
+            </div>
+          </div>
+          <figure class="studio-plan">
+            <figcaption>
+              <span class="caption-3">THE SPACE, BEFORE THE PEOPLE</span
+              ><span class="caption-4">FIG. 01</span>
+            </figcaption>
+            <svg
+              viewBox="0 0 440 270"
+              role="img"
+              aria-label="Architectural plan of a ceramics studio with eight seats around two work tables"
+            >
+              <defs>
+                <pattern
+                  id="grid"
+                  width="16"
+                  height="16"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M16 0H0V16"
+                    fill="none"
+                    stroke="#c6c3ae"
+                    stroke-width=".35"
+                  />
+                </pattern>
+              </defs>
+              <rect x="0" y="0" width="440" height="270" fill="#e4e2d0" />
+              <rect x="16" y="16" width="408" height="238" fill="url(#grid)" />
+              <g fill="none" stroke="#73785d" stroke-width="1">
+                <path d="M72 223V42h296v181H156M72 223h32" stroke-width="3" />
+                <path
+                  d="M104 223v-48a48 48 0 0148 48M88 58h264v149M240 42v16M160 42v16M320 42v16"
+                />
+                <path
+                  d="M56 42H40v181h16M40 48l-3 6m3 163l3-6M72 30V18h296v12"
+                />
+                <path d="M368 80h-16v44h16m0 24h-16v44h16" fill="#b2b995" />
+              </g>
+              <g fill="#89966c" stroke="#697553" stroke-width="1">
+                <rect x="128" y="99" width="76" height="76" rx="2" />
+                <rect x="236" y="99" width="76" height="76" rx="2" />
+              </g>
+              <g fill="#ba7759" stroke="#774d39" stroke-width="1">
+                <circle cx="146" cy="79" r="12" />
+                <circle cx="186" cy="79" r="12" />
+                <circle cx="146" cy="195" r="12" />
+                <circle cx="186" cy="195" r="12" />
+                <circle cx="254" cy="79" r="12" />
+                <circle cx="294" cy="79" r="12" />
+                <circle cx="254" cy="195" r="12" />
+                <circle cx="294" cy="195" r="12" />
+              </g>
+              <g fill="#dac29b" stroke="#687752" stroke-width=".8">
+                <circle cx="150" cy="120" r="10" />
+                <circle cx="184" cy="150" r="10" />
+                <circle cx="258" cy="120" r="10" />
+                <circle cx="292" cy="150" r="10" />
+              </g>
+              <g fill="#dddcc6" stroke="#687752">
+                <rect x="135" y="145" width="12" height="18" />
+                <rect x="182" y="112" width="12" height="18" />
+                <rect x="243" y="145" width="12" height="18" />
+                <rect x="290" y="112" width="12" height="18" />
+              </g>
+              <g stroke="#8d7459" stroke-width="2">
+                <path d="m160 136 23-5m87 5 12-5" />
+              </g>
+              <g fill="#4f5942">
+                <path d="m390 39-5 14h10z" />
+                <path d="M389 232h19v2h-19z" />
+              </g>
+              <g fill="#5e644f" font-family="Manrope, sans-serif" font-size="9">
+                <text x="387" y="31">N</text>
+                <text x="185" y="20">STUDIO / 8 PLACES</text>
+                <text x="384" y="247">1 : 50</text>
+                <text x="13" y="142" transform="rotate(-90 13 142)">
+                  STEP FREE ENTRY
+                </text>
+              </g>
+            </svg>
+            <div class="plan-legend caption-4">
+              <span><i class="legend-seat"></i>8 places</span
+              ><span><i class="legend-table"></i>2 work tables</span
+              ><span>Illustrative floor plan</span>
+            </div>
+          </figure>
+        </section>
+        <section class="launch-section" id="launch">
+          <div class="launch-caption">
+            <h2 class="title-3" id="view-title">The launch plan</h2>
+            <span class="caption-4" id="state-caption"
+              >01 / CONDITIONS & COLLECTION</span
+            >
+          </div>
+          <div class="workspace" id="workspace">
+            <div id="app" aria-live="polite">
+              <div class="skeleton"></div>
+              <div class="skeleton short"></div>
+              <p class="body-6">Loading the launch plan…</p>
+            </div>
+          </div>
+        </section>
+        <section class="field-notes" id="how">
+          <div class="notes-label caption-3">
+            HOW THIS WORKS<br /><span>FIELD NOTES / 001</span>
+          </div>
+          <div class="notes-copy">
+            <h2 class="heading-4 tagline" id="tagline">
+              <span>Agree</span> <span>on</span> <span>the</span>
+              <span>conditions.</span><br /><span>Collect</span>
+              <span>when</span> <span>they’re</span> <span>met.</span>
+            </h2>
+            <p class="body-6">
+              Participants authorize the reviewed ticket amount under the agreed
+              terms. The organizer confirms the venue and readiness. Greenlight
+              checks the plan before attempting collection. If settlement fails,
+              recovery stays visible.
+            </p>
+            <details>
+              <summary class="title-4">
+                What this prototype can and cannot do
+              </summary>
+              <p class="body-6">
+                Simulation is enabled by default. PayPal sandbox requires
+                credentials and verification. Local AI runs through Ollama. New
+                text briefs are extracted into drafts that require explicit
+                review. Greenlight is not escrow, and group capture is not
+                atomic. Hosting, arbitrary brief extraction, and the final
+                submission are unfinished.
+              </p>
+            </details>
+          </div>
+        </section>
+        <footer class="footer">
+          <span class="caption-5"
+            >A working study in conditional commerce.</span
+          >
+          <div>
+            <button class="quiet caption-4" data-action="privacy">
+              Privacy</button
+            ><button class="quiet caption-4" data-action="terms">
+              Prototype terms</button
+            ><a class="quiet caption-4" href="#main">Back to the desk ↑</a>
+          </div>
+        </footer>
+      </main>
+    </div>
+    <dialog id="modal" aria-labelledby="modal-title">
+      <div id="modal-content"></div>
+    </dialog>
+    <div id="notice" role="status" class="notice body-6" hidden></div>
+  </body>
+</html>
