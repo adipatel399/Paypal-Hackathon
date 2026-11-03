@@ -11,6 +11,14 @@ for (const key of [
 ])
   console.log(`${key}: ${process.env[key] ? "configured" : "missing"}`);
 console.log(`AI: ${config.provider} / ${config.model || "none"}`);
+if (config.provider === "groq") {
+  console.log(
+    `GROQ_API_KEY: ${process.env.GROQ_API_KEY ? "configured" : "missing"}`,
+  );
+  console.log(
+    `Groq Free account confirmation: ${process.env.GROQ_FREE_TIER_CONFIRMED === "true" ? "confirmed by operator; not independently verified" : "required before requests"}`,
+  );
+}
 if (config.provider === "ollama") {
   try {
     const r = await fetch("http://127.0.0.1:11434/api/tags", {

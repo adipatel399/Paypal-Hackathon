@@ -7,6 +7,12 @@ export function modelConfig(env = process.env) {
       model: env.OLLAMA_MODEL || "llama3.2:latest",
       configured: true,
     };
+  if (provider === "groq")
+    return {
+      provider,
+      model: env.GROQ_MODEL || "openai/gpt-oss-20b",
+      configured: !!env.GROQ_API_KEY,
+    };
   if (provider === "gemini")
     return {
       provider,
@@ -16,7 +22,7 @@ export function modelConfig(env = process.env) {
   if (provider === "fixture")
     return { provider, model: null, configured: false };
   throw new Error(
-    "AI_PROVIDER must be ollama, gemini, or fixture. Billed providers are disabled.",
+    "AI_PROVIDER must be ollama, groq, gemini, or fixture. No automatic provider switching is allowed.",
   );
 }
 export async function generateJSON(
@@ -28,7 +34,7 @@ export async function generateJSON(
   const config = modelConfig(env);
   if (!config.configured)
     throw new Error(
-      "Configure a local Ollama model or a Gemini free-tier key. No AI result was generated.",
+      "Configure Ollama or a Groq/Gemini free-tier key. No AI result was generated.",
     );
   let response;
   const user = JSON.stringify(input);
@@ -51,6 +57,49 @@ export async function generateJSON(
         ],
       }),
     });
+  } else if (config.provider === "groq") {
+    if (env.GROQ_FREE_TIER_CONFIRMED !== "true")
+      throw new Error(
+        "Verify the Groq account is on Free without a payment method, then set GROQ_FREE_TIER_CONFIRMED=true. The app cannot inspect account billing.",
+      );
+    const supported = [
+      "openai/gpt-oss-20b",
+      "openai/gpt-oss-120b",
+      "qwen/qwen3.8-27b",
+    ];
+    if (!supported.includes(config.model))
+      throw new Error(
+        "Choose a supported Groq structured-output model. No request was sent.",
+      );
+    response = await fetcher(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(60000),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          stream: false,
+          temperature: 0,
+          max_completion_tokens: 4096,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "greenlight_result",
+              strict: true,
+              schema: strictSchema(schema),
+            },
+          },
+        }),
+      },
+    );
   } else {
     if (env.FREE_TIER_CONFIRMED !== "true")
       throw new Error(
@@ -77,6 +126,13 @@ export async function generateJSON(
       },
     );
   }
+  if (response.status === 429)
+    throw Object.assign(
+      new Error(
+        "The selected AI provider's rate limit was reached. Wait and try again. No upgrade or fallback was attempted.",
+      ),
+      { status: 429 },
+    );
   if (!response.ok)
     throw new Error(
       `${config.provider} returned ${response.status}. No fallback provider was called. Check the model service or free-tier quota.`,
@@ -85,7 +141,11 @@ export async function generateJSON(
   const raw =
     config.provider === "ollama"
       ? body.message?.content
-      : body.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("");
+      : config.provider === "groq"
+        ? body.choices?.[0]?.message?.content
+        : body.candidates?.[0]?.content?.parts
+            ?.map((p) => p.text || "")
+            .join("");
   if (typeof raw !== "string")
     throw new Error("The model did not return a JSON result.");
   let data;
@@ -99,4 +159,18 @@ export async function generateJSON(
     );
   }
   return { data, provider: config.provider, model: config.model };
+}
+
+// Groq strict mode requires every object's properties to be required, and forbids extras.
+export function strictSchema(schema) {
+  if (Array.isArray(schema)) return schema.map(strictSchema);
+  if (!schema || typeof schema !== "object") return schema;
+  const result = Object.fromEntries(
+    Object.entries(schema).map(([key, value]) => [key, strictSchema(value)]),
+  );
+  if (result.type === "object" || result.properties) {
+    result.additionalProperties = false;
+    if (result.properties) result.required = Object.keys(result.properties);
+  }
+  return result;
 }

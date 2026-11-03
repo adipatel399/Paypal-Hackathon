@@ -92,6 +92,19 @@ OLLAMA_MODEL=llama3.2:latest
 
 Requests go only to `127.0.0.1:11434`. No cloud AI credential, account subscription or per-request charge is involved. Compute uses your own hardware. Model output is schema-constrained and application-validated, but can still be wrong. User review is mandatory. Five synthetic evaluation cases are provided; they are not a reliability certification.
 
+### Hosted-demo option: Groq Free plan
+
+A hosted judge demo needs server-side cloud inference rather than access to the entrant's Mac. A Groq adapter is implemented with strict JSON output, application validation, explicit free-plan confirmation, and clear rate-limit errors. No automatic paid fallback is used. See [the hosted demo plan](docs/HOSTED_DEMO_PLAN.md) for the remaining Azure storage, session, authentication and deployment work.
+
+```dotenv
+AI_PROVIDER=groq
+GROQ_API_KEY=your_free_plan_key
+GROQ_MODEL=openai/gpt-oss-20b
+GROQ_FREE_TIER_CONFIRMED=true
+```
+
+Keep the Groq account on Free without adding a payment method. The app cannot inspect provider billing. Requests send the brief to Groq; review its data terms before submitting private information. Live Groq inference remains unverified until the entrant supplies a key. The local-model evaluation report must not be represented as Groq results.
+
 ### Optional Gemini free tier
 
 ```dotenv

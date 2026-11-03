@@ -10,7 +10,7 @@ Updated 3 November 2026. Budget requirement: ₹0, no paid cloud resources.
 - Typed venue quote entry and new-agreement activation after existing commitments are resolved. Prior campaign archived in SQLite.
 - Dynamic reviewed prices, integer-cent accounting, participant bounds, materials, fees, margin, district, time and access requirements.
 - Stale buyer agreements rejected by campaign ID/version. Raw PayPal payloads excluded from public exports.
-- Thirty offline tests pass. Real local model evaluation passes five synthetic cases. The earlier baseline and the final report are retained in `AI_EVALUATION_BASELINE.json` and `AI_EVALUATION.json`; this is a small test set, not a safety certification.
+- Thirty-four offline tests pass, including four Groq adapter contract tests. Real local model evaluation passes five synthetic cases. The earlier baseline and the final report are retained in `AI_EVALUATION_BASELINE.json` and `AI_EVALUATION.json`; this is a small test set, not a safety certification.
 - Sandbox-only PayPal adapter, operation journal, settlement compensation, manual reconciliation and webhook signature-verification code.
 - Local setup instructions, CI workflow, MIT license, and submission draft.
 
@@ -26,7 +26,7 @@ Published: https://github.com/adipatel399/Paypal-Hackathon . GitHub detects the 
 
 ## Hosting decision
 
-The run-instructions submission option avoids requiring any paid hosting. An Azure student account has been offered as a possible later option; no Azure resources have been provisioned. Do not enable billed resources to run this project.
+The run-instructions submission option avoids requiring any paid hosting. Azure + Groq is now the target for a hosted judge demo. The Groq adapter is implemented; public deployment still needs durable storage and judge-session isolation. No Azure resources have been provisioned. Do not enable billed resources to run this project.
 
 ## Model limitations
 
